@@ -55,7 +55,6 @@ namespace Softingal_Api.Controllers
                 return BadRequest("Bad Login");
 
 
-
             string token = CreateToken(dbUser);
 
             return token;
@@ -65,7 +64,8 @@ namespace Softingal_Api.Controllers
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("sub", user.Id.ToString())
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:TokenSecret").Value));
