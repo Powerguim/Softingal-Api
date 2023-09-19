@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -43,7 +44,7 @@ namespace Softingal_Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<object>> Login(UserDto request)
         {
 
             var dbUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -57,7 +58,15 @@ namespace Softingal_Api.Controllers
 
             string token = CreateToken(dbUser);
 
-            return token;
+            return new { token };
+        }
+
+        [HttpGet("validateToken")]
+        [Authorize]
+        public async Task<ActionResult<string>> ValidateToken()
+        {
+
+            return Ok();
         }
 
         private string CreateToken(User user)

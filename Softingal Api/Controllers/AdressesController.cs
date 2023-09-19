@@ -46,6 +46,7 @@ namespace Softingal_Api.Controllers
             return Ok(userAddresses);
         }
 
+
         [HttpPost]
         public async Task<ActionResult<List<Address>>> CreateAddress(Address address)
         {
@@ -60,13 +61,21 @@ namespace Softingal_Api.Controllers
                 return Unauthorized("Unauthorized (The dev at least protected the user addresses :D ).");
             }
 
+            if (string.IsNullOrEmpty(address.Name))
+                return BadRequest("Name is required");
+
             // Set the UserId property of the new address
             address.UserId = int.Parse(userId);
 
             _context.Addresses.Add(address);
             await _context.SaveChangesAsync();
 
-            return Ok(await _context.Addresses.ToListAsync());
+            // Retrieve addresses for the authenticated user
+            var userAddresses = await _context.Addresses
+                .Where(address => address.UserId == int.Parse(userId))
+                .ToListAsync();
+
+            return Ok(userAddresses);
         }
 
         [HttpPut]
@@ -84,6 +93,9 @@ namespace Softingal_Api.Controllers
 
             if(int.Parse(userId) != dbAddress.UserId)
                 return BadRequest("Not your address!");
+
+            if (string.IsNullOrEmpty(address.Name))
+                return BadRequest("Name is required");
 
             dbAddress.Name = address.Name;
 
@@ -115,7 +127,12 @@ namespace Softingal_Api.Controllers
             _context.Addresses.Remove(dbAddress);
             await _context.SaveChangesAsync();
 
-            return Ok(await _context.Addresses.ToListAsync());
+            // Retrieve addresses for the authenticated user
+            var userAddresses = await _context.Addresses
+                .Where(address => address.UserId == int.Parse(userId))
+                .ToListAsync();
+
+            return Ok(userAddresses);
         }
 
     }
